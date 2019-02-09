@@ -12,3 +12,11 @@ Releases will be drafted from the master branch with each folder in the master b
 
 ## Hardware Configurations
 Presently, the table design calls for a stereoscopic 3D television embedded in a table, with a protective glass topping and a touch sensor placed on the glass.  An Xbox Kinect is used to track motion and a PC runs the host application with a USB connection to the Kinect.  THe table is run as a second display in Windows.
+### 3D TV Configurations
+By default, most displays will not be properly configured for immersive applications; there will be unusable areas of the screen and Windows will try to consume more screen area than it should.  
+ * Remove display overscan
+   * For our model this was done by setting `Picture Size` to `Screen Fit` in the menu
+ * Disable the Windows taskbar on the display
+   * For Windows 10, build 17134, this is done in the settings app by searching for `Taskbar settings` and setting `Show taskbar on all displays` to `off`
+ * Disable display scaling on the display
+   * For Windows 10, build 17134, this is done in the settings app under `Display settings`, selecting the 3D TV and setting `Change the size of text, apps, and other items` to `100%`  
