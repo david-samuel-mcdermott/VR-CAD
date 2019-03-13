@@ -8,7 +8,7 @@ Releases will be drafted from the master branch with each folder in the master b
 
 ## Repository Subdirectories
 ### RhinoPlugin
-This directory contains the Python code used to communicate with Rhino3D.  This should contain one script any its necessary supporting files.  This script creates the viewports for rhino, launches a server to handle updates from the touch overlay, and connnects to the user tracking server to continuously update the user's position.
+This directory contains the Python code used to communicate with Rhino3D.  This should contain one script and its necessary supporting files.  This script creates the viewports for rhino, launches a server to handle updates from the touch overlay, and connnects to the user tracking server to continuously update the user's position.
 ### TableToUser
 This directory contains the Win32 and OpenCV code used to track the user and create the vector from the table to the user; this acts as a server, receiveing HTTP GET requests for user position and sending JSON responses to the Python code running on Rhino.
 ### TouchOverlay
