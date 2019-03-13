@@ -56,7 +56,6 @@
             this.exitButton.TabIndex = 0;
             this.exitButton.Text = "Exit";
             this.exitButton.UseVisualStyleBackColor = true;
-            this.exitButton.Click += ExitButton_Click;
             // 
             // leftFlowLayout
             // 
@@ -76,7 +75,6 @@
             this.exampleButton.TabIndex = 0;
             this.exampleButton.Text = "Test Button";
             this.exampleButton.UseVisualStyleBackColor = true;
-            this.exampleButton.Click += ExampleButton_Click;
             // 
             // OverlayForm
             // 
@@ -103,16 +101,6 @@
             this.ResumeLayout(false);
 
         }
-
-        //TODO: Create all necessary buttons for UI functionality
-        //Note: Actions in Program.cs can be triggered via Program.<method name>
-        private void ExampleButton_Click(object sender, System.EventArgs e)
-        {
-            //This is an empty body for a click event; throw exception can be replaced with functionality
-            throw new System.NotImplementedException();
-        }
-
-        private void ExitButton_Click(object sender, System.EventArgs e) => System.Windows.Forms.Application.Exit();
 
         #endregion
 
