@@ -93,7 +93,15 @@ void serveFunction() {
 		//TODO: parse bytes (should indicate request type and are stored in recvBuffer)
 		//if a well formatted API request is recv'd, then send well formatted API response back
 		//if malformed request, respond with the correct HTTP code
-
+		if (iResult==0)
+		{
+			//client disconnected
+		}
+		else if (strlen(recvBuffer)==0)
+		{
+			//message has no content
+		}
+		
 		//TODO: send response
 
 
