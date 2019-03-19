@@ -6,6 +6,7 @@
 #include <WS2tcpip.h>
 //TODO: Add OpenCV headers
 #include <math.h>
+#include <errno.h>
 
 #define BUFFER_LENGTH 2048
 #define DEFAULT_PORT "25565"
@@ -97,11 +98,12 @@ void serveFunction() {
 		{
 			//client disconnected
 		}
-		else if (strlen(recvBuffer)==0)
+		else if recvbuflen==1)
 		{
-			//message has no content
+			//message has no content: only header was received
 		}
 		
+		int request_type = iResult >> (recvbuflen-1)*8;
 		//TODO: send response
 
 
