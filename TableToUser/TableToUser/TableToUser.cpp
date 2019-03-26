@@ -1,11 +1,19 @@
 #include "pch.h"
 #include <iostream>
+#include <vector>
 #include <thread>
 #include <winsock2.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
 #include <math.h>
 
+//disable POSIX Errors in MSVC++
+#ifdef _MSC_VER
+	#pragma warning(disable : 4996)
+	#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+//Allow compilation even if OpenCV is not installed for testing purposes
 #if __has_include(<opencv2/opencv.hpp>)
 	#include <opencv2/objdetect.hpp>
 	#include <opencv2/highgui.hpp>
@@ -31,7 +39,7 @@ volatile bool serveFail = false;
 	constexpr double[] lookAt = {0.0, 0.0, 0.0};
 	constexpr double[] eye = {0.0, 0.0, 0.0};
 #else
-	volatile cv::Vec3d lookAt(0.0,0.0,0.0);
+	volatile cv::Vec3d lookAt(0.0, 0.0, 0.0);
 	volatile cv::Vec3d eye(0.0, 0.0, 0.0);
 #endif
 
@@ -48,7 +56,85 @@ int main(){
 void processing() {
 	 
 #ifndef NO_CV
+	//Create the image capture variables
+	cv::VideoCapture capture;
+	cv::Mat frame, image;
+	cv::CascadeClassifier cascade, nestedCascade;
+	double scale = 1.0;
 
+	//Use OpenCV facial classifiers
+	nestedCascade.load("./resources/haarcascade_eye_tree_eyeglasses.xml");
+	cascade.load("./resources/haarcascade_frontalcatface.xml");
+
+	capture.open(0);
+	if (capture.isOpened()) {
+		std::cout << "Processing loop starting" << std::endl;
+		for (;;) {
+			//Extract the next frame
+			capture >> frame;
+			if (frame.empty()) {
+				std::cout << "Empty frame; video disconnected" << std::endl;
+				break;
+			}
+			cv::Mat frame1 = frame.clone();
+			//Image preprocessing
+			std::vector<cv::Rect> faces, faces2;
+			cv::Mat grey, smallImg;
+			cv::cvtColor(frame1, grey, cv::COLOR_BGR2GRAY);
+			double fx = 1.0 / scale;
+			cv::resize(grey, smallImg, cv::Size(), fx, fx, cv::INTER_LINEAR);
+			cv::equalizeHist(smallImg, smallImg);
+			//Detect the faces
+			cascade.detectMultiScale(smallImg, faces, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+			for (std::size_t i = 0; i < faces.size(); i++) {
+				cv::Rect r = faces[i];
+				cv::Mat smallImgROI; 
+				std::vector<cv::Rect> nestedObjects;
+				cv::Point center;
+				cv::Scalar color(255, 0, 0);
+				int radius;
+
+				double aspectRatio = double(r.width)/double(r.height);
+				if (0.75 < aspectRatio && aspectRatio < 1.3)
+				{
+					center.x = cvRound((r.x + r.width*0.5)*scale);
+					center.y = cvRound((r.y + r.height*0.5)*scale);
+					radius = cvRound((r.width + r.height)*0.25*scale);
+					circle(frame1, center, radius, color, 3, 8, 0);
+				}
+				else
+					rectangle(frame1, cvPoint(cvRound(r.x*scale), cvRound(r.y*scale)),
+						cvPoint(cvRound((r.x + r.width - 1)*scale),
+							cvRound((r.y + r.height - 1)*scale)), color, 3, 8, 0);
+				if (nestedCascade.empty())
+					continue;
+				smallImgROI = smallImg(r);
+
+				// Detection of eyes int the input image 
+				nestedCascade.detectMultiScale(smallImgROI, nestedObjects, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+
+				// Draw circles around eyes 
+				for (size_t j = 0; j < nestedObjects.size(); j++)
+				{
+					cv::Rect nr = nestedObjects[j];
+					center.x = cvRound((r.x + nr.x + nr.width*0.5)*scale);
+					center.y = cvRound((r.y + nr.y + nr.height*0.5)*scale);
+					radius = cvRound((nr.width + nr.height)*0.25*scale);
+					circle(frame1, center, radius, color, 3, 8, 0);
+				}
+			}
+
+			imshow("Video Feed", frame);
+			imshow("Face Detection", frame1);
+
+			char c = (char)cv::waitKey(1);
+			if (c == VK_ESCAPE) {
+				std::cout << "Escape pressed, exiting" << std::endl;
+				break;
+			}
+		}
+	}
+	serveStop = true;
 #else
 	std::cout << "No Vision Capability, halting thread.  Server still will function\n" << std::endl;
 #endif
@@ -68,7 +154,7 @@ void serveFunction() {
 	struct addrinfo hints;
 
 	char recvBuffer[BUFFER_LENGTH];
-	size_t recvbuflen = BUFFER_LENGTH;
+	int recvbuflen = BUFFER_LENGTH;
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult) {

@@ -91,7 +91,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -99,7 +99,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d220d.lib;opencv_contrib220d.lib;opencv_core220d.lib;opencv_features2d220d.lib;opencv_ffmpeg220d.lib;opencv_flann220d.lib;opencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\binopencv_calib3d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_contrib220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_core220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_features2d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_ffmpeg220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_flann220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,7 +107,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -115,7 +115,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d220d.lib;opencv_contrib220d.lib;opencv_core220d.lib;opencv_features2d220d.lib;opencv_ffmpeg220d.lib;opencv_flann220d.lib;opencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\binopencv_calib3d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_contrib220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_core220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_features2d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_ffmpeg220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_flann220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,7 +125,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -136,8 +136,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d320.lib;opencv_core320.lib;opencv_features2d320.lib;opencv_flann320.lib;opencv_highgui320.lib;opencv_imgcodecs320.lib;opencv_imgproc320.lib;opencv_ml320.lib;opencv_objdetect320.lib;opencv_photo320.lib;opencv_shape320.lib;opencv_stitching320.lib;opencv_superres320.lib;opencv_video320.lib;opencv_videoio320.lib;opencv_videostab320.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\lib\opencv_calib3d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_core320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_features2d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_flann320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_highgui320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgcodecs320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgproc320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_ml320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_objdetect320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_photo320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_shape320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_stitching320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_superres320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_video320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videoio320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videostab320.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>robocopy "$(SolutionDir)TableToUser\resources" "$(TargetDir)resources" /s /e </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -146,7 +149,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -157,8 +160,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d320.lib;opencv_core320.lib;opencv_features2d320.lib;opencv_flann320.lib;opencv_highgui320.lib;opencv_imgcodecs320.lib;opencv_imgproc320.lib;opencv_ml320.lib;opencv_objdetect320.lib;opencv_photo320.lib;opencv_shape320.lib;opencv_stitching320.lib;opencv_superres320.lib;opencv_video320.lib;opencv_videoio320.lib;opencv_videostab320.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\lib\opencv_calib3d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_core320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_features2d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_flann320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_highgui320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgcodecs320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgproc320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_ml320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_objdetect320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_photo320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_shape320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_stitching320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_superres320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_video320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videoio320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videostab320.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>robocopy "$(SolutionDir)TableToUser\resources" "$(TargetDir)resources" /s /e </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -171,6 +177,25 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TableToUser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="resources\haarcascade_eye.xml" />
+    <Xml Include="resources\haarcascade_eye_tree_eyeglasses.xml" />
+    <Xml Include="resources\haarcascade_frontalcatface.xml" />
+    <Xml Include="resources\haarcascade_frontalcatface_extended.xml" />
+    <Xml Include="resources\haarcascade_frontalface_alt.xml" />
+    <Xml Include="resources\haarcascade_frontalface_alt2.xml" />
+    <Xml Include="resources\haarcascade_frontalface_alt_tree.xml" />
+    <Xml Include="resources\haarcascade_frontalface_default.xml" />
+    <Xml Include="resources\haarcascade_fullbody.xml" />
+    <Xml Include="resources\haarcascade_lefteye_2splits.xml" />
+    <Xml Include="resources\haarcascade_licence_plate_rus_16stages.xml" />
+    <Xml Include="resources\haarcascade_lowerbody.xml" />
+    <Xml Include="resources\haarcascade_profileface.xml" />
+    <Xml Include="resources\haarcascade_righteye_2splits.xml" />
+    <Xml Include="resources\haarcascade_russian_plate_number.xml" />
+    <Xml Include="resources\haarcascade_smile.xml" />
+    <Xml Include="resources\haarcascade_upperbody.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
