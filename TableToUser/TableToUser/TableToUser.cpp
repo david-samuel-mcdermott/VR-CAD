@@ -4,8 +4,17 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
-//TODO: Add OpenCV headers
 #include <math.h>
+
+#if __has_include(<opencv2/opencv.hpp>)
+	#include <opencv2/objdetect.hpp>
+	#include <opencv2/highgui.hpp>
+	#include <opencv2/imgproc.hpp>
+	#include <opencv2/opencv.hpp>
+#else
+	#define NO_CV
+	#warning "OpenCV Headers not found, please check your VisualStudio Configuration"
+#endif
 
 #define BUFFER_LENGTH 2048
 #define DEFAULT_PORT "25565"
@@ -18,8 +27,13 @@ void processing();
 volatile bool serveStop = false;
 volatile unsigned short numClients = 0;
 volatile bool serveFail = false;
-
-//TODO volatile vec3 table to user vector
+#ifdef NO_CV
+	constexpr double[] lookAt = {0.0, 0.0, 0.0};
+	constexpr double[] eye = {0.0, 0.0, 0.0};
+#else
+	volatile cv::Vec3d lookAt(0.0,0.0,0.0);
+	volatile cv::Vec3d eye(0.0, 0.0, 0.0);
+#endif
 
 int main(){
 
@@ -32,7 +46,12 @@ int main(){
 }
 
 void processing() {
-	//TODO: OpenCV processing to update the 
+	 
+#ifndef NO_CV
+
+#else
+	std::cout << "No Vision Capability, halting thread.  Server still will function\n" << std::endl;
+#endif
 
 }
 

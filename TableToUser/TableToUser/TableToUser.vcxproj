@@ -72,9 +72,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\OpenCV\__Build\install\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenCV\__Build\install\x64\vc14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\OpenCV\__Build\install\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenCV\__Build\install\x64\vc14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,6 +99,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_calib3d220d.lib;opencv_contrib220d.lib;opencv_core220d.lib;opencv_features2d220d.lib;opencv_ffmpeg220d.lib;opencv_flann220d.lib;opencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,6 +115,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_calib3d220d.lib;opencv_contrib220d.lib;opencv_core220d.lib;opencv_features2d220d.lib;opencv_ffmpeg220d.lib;opencv_flann220d.lib;opencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
