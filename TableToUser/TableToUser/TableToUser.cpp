@@ -4,6 +4,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
+#include <bits/stdc++.h>
 //TODO: Add OpenCV headers
 #include <math.h>
 #include <errno.h>
@@ -35,6 +36,22 @@ void processing() {
 
 }
 
+int sendData(int sckt, void *data, int dataLength) {
+	unsigned char *msgData = (unsigned char *) data;
+	int bytesSent;
+	
+	//call send in a loop until proper bytes of data have been sent to client
+	while (dataLength > 0) {
+		bytesSent = send(sckt,msgData,dataLength,0);
+		if (bytesSent == -1) {
+			return -1;
+		}
+		msgData += bytesSent;
+		dataLength -= bytesSent;
+	}
+	
+	return 0;
+}
 void serveFunction() {
 
 	//Create server socket
@@ -94,16 +111,29 @@ void serveFunction() {
 		//TODO: parse bytes (should indicate request type and are stored in recvBuffer)
 		//if a well formatted API request is recv'd, then send well formatted API response back
 		//if malformed request, respond with the correct HTTP code
+		
+		std::stringstream wsss;
+		wsss << "HTTP/1.1 200 OK\r\n"
+			<< "Connection: keep-alive\r\n"
+			<< "Content-Type: text/html; chraset=iso-8859-1\r\n"
+			<< "Content-Length: " << recvbuflen << "\r\n"
+			<< "\r\n";
+		
+		//send headers
+		std::string headers = wsss.str();
+		int res = sendData(client,headers.c_str(),headers.size());
+		if (res==-1){
+			//Error with sending the header
+		}
+		res = sendData(client,recvBuffer,recvbuflen);
+		if (res==-1) {
+			//error sending response data
+		}
+		
 		if (iResult==0)
 		{
 			//client disconnected
 		}
-		else if recvbuflen==1)
-		{
-			//message has no content: only header was received
-		}
-		
-		int request_type = iResult >> (recvbuflen-1)*8;
 		//TODO: send response
 
 
