@@ -10,8 +10,6 @@
 #define BUFFER_LENGTH 2048
 #define DEFAULT_PORT "25565"
 
-#pragma comment(lib, "Ws2_32.lib")
-
 void serveFunction();
 void processing();
 
