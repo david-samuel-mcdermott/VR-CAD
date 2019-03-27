@@ -1,11 +1,15 @@
 #include "pch.h"
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 #include <thread>
 #include <winsock2.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
 #include <math.h>
+#include <tuple>
+#include <time.h>
 
 //disable POSIX Errors in MSVC++
 #ifdef _MSC_VER
@@ -43,10 +47,23 @@ volatile bool serveFail = false;
 	volatile cv::Vec3d eye(0.0, 0.0, 0.0);
 #endif
 
+typedef struct Eye {
+	cv::Point center;
+	double radius;
+} Eye;
+
+typedef struct Face {
+	cv::Point center;
+	double radius;
+	cv::Scalar color;
+	std::vector<Eye> eyes;
+} Face;
+
 int main(){
 
 	std::thread* serveThread;
 	serveThread = new std::thread(&serveFunction);
+	srand(time(nullptr));
 
 	processing();
 
@@ -56,28 +73,54 @@ int main(){
 void processing() {
 	 
 #ifndef NO_CV
+	std::vector < Face > faceList;
+
 	//Create the image capture variables
 	cv::VideoCapture capture;
-	cv::Mat frame, image;
+	cv::Mat frame, oldFrame, image;
 	cv::CascadeClassifier cascade, nestedCascade;
 	double scale = 1.0;
 
 	//Use OpenCV facial classifiers
+	//TODO: train new classifiers to work better with glasses
 	nestedCascade.load("./resources/haarcascade_eye_tree_eyeglasses.xml");
-	cascade.load("./resources/haarcascade_frontalcatface.xml");
+	cascade.load("./resources/haarcascade_frontalface_default.xml");
+
+	cv::namedWindow("Configurations");
+	int bright_slider = 100;
+	int contrast_slider = 10;
+
+	cv::createTrackbar("Brightness", "Configurations", &bright_slider, 200);
+	cv::createTrackbar("Contrast", "Configurations", &contrast_slider, 20);
 
 	capture.open(0);
 	if (capture.isOpened()) {
+
 		std::cout << "Processing loop starting" << std::endl;
 		for (;;) {
 			//Extract the next frame
 			capture >> frame;
+
 			if (frame.empty()) {
 				std::cout << "Empty frame; video disconnected" << std::endl;
 				break;
 			}
 			cv::Mat frame1 = frame.clone();
 			//Image preprocessing
+			for (int y = 0; y < frame1.rows; y++) {
+				for (int x = 0; x < frame1.cols; x++) {
+					for (int c = 0; c < 3; c++) {
+						double alpha = ((contrast_slider - 10) >= 0) ? double(contrast_slider - 9) / 2 : 1.0 / double(cv::abs(11 - contrast_slider));
+						double beta = bright_slider - 100;
+						auto newVal = cv::saturate_cast<uchar>(alpha*(frame1.at<cv::Vec3b>(y, x)[c]) + beta);
+						frame1.at<cv::Vec3b>(y, x)[c] = newVal;
+					}
+				}
+			}
+			//For higher speed denoising, use this; it almost works
+			//cv::GaussianBlur(frame1, frame1, cv::Size(3, 3), 0, 0);
+			//For super fast computers, this may be nice but is too slow for use
+			//cv::fastNlMeansDenoisingColored(frame1, frame1);
 			std::vector<cv::Rect> faces, faces2;
 			cv::Mat grey, smallImg;
 			cv::cvtColor(frame1, grey, cv::COLOR_BGR2GRAY);
@@ -86,12 +129,22 @@ void processing() {
 			cv::equalizeHist(smallImg, smallImg);
 			//Detect the faces
 			cascade.detectMultiScale(smallImg, faces, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+			//Save old frame if necessary
+			if (oldFrame.empty()) {
+				cv::swap(oldFrame, smallImg);
+				continue;
+			}
+			cv::UMat uflow;
+			cv::Mat flow;
+			cv::calcOpticalFlowFarneback(oldFrame, smallImg, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
+			uflow.copyTo(flow);
+
 			for (std::size_t i = 0; i < faces.size(); i++) {
 				cv::Rect r = faces[i];
 				cv::Mat smallImgROI; 
 				std::vector<cv::Rect> nestedObjects;
 				cv::Point center;
-				cv::Scalar color(255, 0, 0);
+				cv::Scalar color(rand() % 255, rand() % 255, rand() % 255);
 				int radius;
 
 				double aspectRatio = double(r.width)/double(r.height);
@@ -100,17 +153,14 @@ void processing() {
 					center.x = cvRound((r.x + r.width*0.5)*scale);
 					center.y = cvRound((r.y + r.height*0.5)*scale);
 					radius = cvRound((r.width + r.height)*0.25*scale);
-					circle(frame1, center, radius, color, 3, 8, 0);
 				}
-				else
-					rectangle(frame1, cvPoint(cvRound(r.x*scale), cvRound(r.y*scale)),
-						cvPoint(cvRound((r.x + r.width - 1)*scale),
-							cvRound((r.y + r.height - 1)*scale)), color, 3, 8, 0);
+				Face face = {center, radius, color, std::vector<Eye>()};
+
 				if (nestedCascade.empty())
 					continue;
 				smallImgROI = smallImg(r);
 
-				// Detection of eyes int the input image 
+				// Detection of eyes in the input image 
 				nestedCascade.detectMultiScale(smallImgROI, nestedObjects, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
 
 				// Draw circles around eyes 
@@ -120,12 +170,44 @@ void processing() {
 					center.x = cvRound((r.x + nr.x + nr.width*0.5)*scale);
 					center.y = cvRound((r.y + nr.y + nr.height*0.5)*scale);
 					radius = cvRound((nr.width + nr.height)*0.25*scale);
-					circle(frame1, center, radius, color, 3, 8, 0);
+					Eye eye = { center, radius };
+					face.eyes.push_back(eye);
 				}
 			}
 
+			//Draw circles around faces and eyes
+			for (std::size_t i = 0; i < faceList.size(); i++) {
+				cv::circle(frame1, faceList[i].center, faceList[i].radius, faceList[i].color);
+				for (std::size_t j = 0; j < faceList[i].eyes.size(); j++) {
+					cv::circle(frame1, faceList[i].eyes[j].center, faceList[i].eyes[j].radius, faceList[i].color);
+				}
+			}
+
+			#ifdef OFM
+				for (int y = 0; y < frame1.rows; y += 16) {
+					for (int x = 0; x < frame1.cols; x += 16)
+					{
+						//Get the flow values at each point
+						const cv::Point2f & fxy = flow.at<cv::Point2f>(y, x);
+
+						//Get the scalar value of the motion at the point
+						float scalarFlow = sqrt(fxy.x * fxy.x + fxy.y * fxy.y);
+
+						unsigned __int8 red = 255.0 / (1.0 + exp(-scalarFlow / 4 + 2));
+						unsigned __int8 blue = 255 - red;
+
+						//Draw the line pointing in the direction of motion
+						cv::line(frame1, cv::Point(x, y), cv::Point(cvRound(x + fxy.x), cvRound(y + fxy.y)), cv::Scalar(blue, 0, red));
+
+						//Draw the point that we're looking at
+						cv::circle(frame1, cv::Point(x, y), 2, cv::Scalar(blue, 0, red), -1);
+					}
+				}
+			#endif
+
 			imshow("Video Feed", frame);
 			imshow("Face Detection", frame1);
+			cv::swap(oldFrame, frame1);
 
 			char c = (char)cv::waitKey(1);
 			if (c == VK_ESCAPE) {
