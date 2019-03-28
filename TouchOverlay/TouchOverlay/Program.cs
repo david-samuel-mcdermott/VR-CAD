@@ -14,6 +14,9 @@ namespace TouchOverlay
         [STAThread]
         static void Main()
         {
+            SynchronousSocketClient.StartClient();
+            SynchronousSocketClient.SendPOST("Hello");
+            SynchronousSocketClient.RecvResponse();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new OverlayForm());
