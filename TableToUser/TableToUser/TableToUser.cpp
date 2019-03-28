@@ -134,11 +134,15 @@ void processing() {
 				cv::swap(oldFrame, smallImg);
 				continue;
 			}
-			cv::UMat uflow;
-			cv::Mat flow;
-			cv::calcOpticalFlowFarneback(oldFrame, smallImg, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
-			uflow.copyTo(flow);
+			#ifdef OFM
+				cv::UMat uflow;
+				cv::Mat flow;
+				cv::calcOpticalFlowFarneback(oldFrame, smallImg, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
+				uflow.copyTo(flow);
+			#endif
 
+			//For face in faces
+			std::vector<Face> newFaces;
 			for (std::size_t i = 0; i < faces.size(); i++) {
 				cv::Rect r = faces[i];
 				cv::Mat smallImgROI; 
@@ -147,6 +151,7 @@ void processing() {
 				cv::Scalar color(rand() % 255, rand() % 255, rand() % 255);
 				int radius;
 
+				//Mark faces
 				double aspectRatio = double(r.width)/double(r.height);
 				if (0.75 < aspectRatio && aspectRatio < 1.3)
 				{
@@ -163,7 +168,7 @@ void processing() {
 				// Detection of eyes in the input image 
 				nestedCascade.detectMultiScale(smallImgROI, nestedObjects, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
 
-				// Draw circles around eyes 
+				// Identify Eyes
 				for (size_t j = 0; j < nestedObjects.size(); j++)
 				{
 					cv::Rect nr = nestedObjects[j];
@@ -173,13 +178,52 @@ void processing() {
 					Eye eye = { center, radius };
 					face.eyes.push_back(eye);
 				}
+				newFaces.push_back(face);
+			}
+
+			//Interframe facial tracking - bipartite lists
+			for (std::vector<Face>::iterator iter = faceList.begin(); iter != faceList.end(); iter++) {
+				Face face = *iter;
+				Face nearest;
+				double distance = std::numeric_limits<double>::infinity();
+				//Remove missing faces
+				if (newFaces.size() < 1) {
+					do {
+						faceList.erase(iter);
+					} while (iter != faceList.end());
+					break;
+				}
+
+				//Find match for face
+				for (std::vector<Face>::iterator iter2 = newFaces.begin(); iter2 != newFaces.end(); iter2++) {
+					Face face2 = *iter2;
+					double dist = cv::abs(face2.center.dot(face.center));
+					if (dist < distance) {
+						distance = dist;
+						nearest = face2;
+					}
+				}
+				nearest.color = face.color;
+				*iter = nearest;
+				//Remove found face
+				for (std::vector<Face>::iterator iter2 = newFaces.begin(); iter2 != newFaces.end(); iter2++) {
+					Face face2 = *iter2;
+					if (face2.center == nearest.center) {
+						newFaces.erase(iter2);
+						break;
+					}
+				}
+			}
+			//Add new faces in
+			for (std::vector<Face>::iterator iter = newFaces.begin(); iter != newFaces.end(); iter++) {
+				faceList.push_back(*iter);
 			}
 
 			//Draw circles around faces and eyes
 			for (std::size_t i = 0; i < faceList.size(); i++) {
-				cv::circle(frame1, faceList[i].center, faceList[i].radius, faceList[i].color);
+				cv::circle(frame1, faceList[i].center, faceList[i].radius, faceList[i].color, 5);
 				for (std::size_t j = 0; j < faceList[i].eyes.size(); j++) {
-					cv::circle(frame1, faceList[i].eyes[j].center, faceList[i].eyes[j].radius, faceList[i].color);
+					cv::circle(frame1, faceList[i].eyes[j].center, faceList[i].eyes[j].radius, faceList[i].color, 3);
 				}
 			}
 
