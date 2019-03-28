@@ -45,4 +45,5 @@ rightEye.SetCameraLocation(rightEye.CameraLocation-rightEye.CameraX*INTEROCULAR_
 
 #TODO: launch new thread to handle inbound data from touch overlay
 
+
 #TODO: loop requests to tabletouser to update camera locations
