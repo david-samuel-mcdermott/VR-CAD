@@ -27,4 +27,57 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="resources\haarcascade_eye_tree_eyeglasses.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_eye.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalcatface.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalcatface_extended.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalface_alt.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalface_alt_tree.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalface_alt2.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_frontalface_default.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_fullbody.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_lefteye_2splits.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_licence_plate_rus_16stages.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_lowerbody.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_profileface.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_righteye_2splits.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_russian_plate_number.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_smile.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+    <Xml Include="resources\haarcascade_upperbody.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+  </ItemGroup>
 </Project>
