@@ -39,12 +39,13 @@ void processing();
 volatile bool serveStop = false;
 volatile unsigned short numClients = 0;
 volatile bool serveFail = false;
+
 #ifdef NO_CV
 	constexpr double[] lookAt = {0.0, 0.0, 0.0};
 	constexpr double[] eye = {0.0, 0.0, 0.0};
 #else
-	volatile cv::Vec3d lookAt(0.0, 0.0, 0.0);
-	volatile cv::Vec3d eye(0.0, 0.0, 0.0);
+	cv::Vec3d lookAt(0.0, 0.0, 0.0);
+	cv::Vec3d eye(0.0, 0.0, 0.0);
 #endif
 
 typedef struct Eye {
@@ -77,7 +78,7 @@ void processing() {
 
 	//Create the image capture variables
 	cv::VideoCapture capture;
-	cv::Mat frame, oldFrame, image;
+	cv::Mat frame, image;
 	cv::CascadeClassifier cascade, nestedCascade;
 	double scale = 1.0;
 
@@ -89,9 +90,11 @@ void processing() {
 	cv::namedWindow("Configurations");
 	int bright_slider = 100;
 	int contrast_slider = 10;
+	int denoise_slider = 3;
 
 	cv::createTrackbar("Brightness", "Configurations", &bright_slider, 200);
 	cv::createTrackbar("Contrast", "Configurations", &contrast_slider, 20);
+	cv::createTrackbar("Denoising", "Configurations", &denoise_slider, 10);
 
 	capture.open(0);
 	if (capture.isOpened()) {
@@ -106,64 +109,51 @@ void processing() {
 				break;
 			}
 			cv::Mat frame1 = frame.clone();
-			//Image preprocessing
-			for (int y = 0; y < frame1.rows; y++) {
-				for (int x = 0; x < frame1.cols; x++) {
-					for (int c = 0; c < 3; c++) {
-						double alpha = ((contrast_slider - 10) >= 0) ? double(contrast_slider - 9) / 2 : 1.0 / double(cv::abs(11 - contrast_slider));
-						double beta = bright_slider - 100;
-						auto newVal = cv::saturate_cast<uchar>(alpha*(frame1.at<cv::Vec3b>(y, x)[c]) + beta);
-						frame1.at<cv::Vec3b>(y, x)[c] = newVal;
-					}
-				}
-			}
-			//For higher speed denoising, use this; it almost works
-			//cv::GaussianBlur(frame1, frame1, cv::Size(3, 3), 0, 0);
-			//For super fast computers, this may be nice but is too slow for use
-			//cv::fastNlMeansDenoisingColored(frame1, frame1);
+
 			std::vector<cv::Rect> faces, faces2;
-			cv::Mat grey, smallImg;
+			cv::Mat grey, processFrame, vizFrame;
 			cv::cvtColor(frame1, grey, cv::COLOR_BGR2GRAY);
 			double fx = 1.0 / scale;
-			cv::resize(grey, smallImg, cv::Size(), fx, fx, cv::INTER_LINEAR);
-			cv::equalizeHist(smallImg, smallImg);
-			//Detect the faces
-			cascade.detectMultiScale(smallImg, faces, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
-			//Save old frame if necessary
-			if (oldFrame.empty()) {
-				cv::swap(oldFrame, smallImg);
-				continue;
+			cv::resize(grey, processFrame, cv::Size(), fx, fx, cv::INTER_LINEAR);
+			for (int y = 0; y < processFrame.rows; y++) {
+				for (int x = 0; x < processFrame.cols; x++) {
+					double alpha = ((contrast_slider - 10) >= 0) ? double(contrast_slider - 9) / 2 : 1.0 / double(cv::abs(11 - contrast_slider));
+					double beta = bright_slider - 100;
+					uchar newVal = cv::saturate_cast<uchar>(alpha*(processFrame.at<uchar>(y, x)) + beta);
+					processFrame.at<uchar>(y, x) = newVal;
+				}
 			}
-			#ifdef OFM
-				cv::UMat uflow;
-				cv::Mat flow;
-				cv::calcOpticalFlowFarneback(oldFrame, smallImg, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
-				uflow.copyTo(flow);
-			#endif
+			cv::equalizeHist(processFrame, processFrame);
+			if (denoise_slider != 0) {
+				cv::fastNlMeansDenoising(processFrame, processFrame, denoise_slider);
+			}
+			//Detect the faces
+			cascade.detectMultiScale(processFrame, faces, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+			//Save old frame if necessary
 
 			//For face in faces
 			std::vector<Face> newFaces;
 			for (std::size_t i = 0; i < faces.size(); i++) {
 				cv::Rect r = faces[i];
-				cv::Mat smallImgROI; 
+				cv::Mat smallImgROI;
 				std::vector<cv::Rect> nestedObjects;
 				cv::Point center;
 				cv::Scalar color(rand() % 255, rand() % 255, rand() % 255);
 				int radius;
 
 				//Mark faces
-				double aspectRatio = double(r.width)/double(r.height);
+				double aspectRatio = double(r.width) / double(r.height);
 				if (0.75 < aspectRatio && aspectRatio < 1.3)
 				{
 					center.x = cvRound((r.x + r.width*0.5)*scale);
 					center.y = cvRound((r.y + r.height*0.5)*scale);
 					radius = cvRound((r.width + r.height)*0.25*scale);
 				}
-				Face face = {center, radius, color, std::vector<Eye>()};
+				Face face = { center, radius, color, std::vector<Eye>() };
 
 				if (nestedCascade.empty())
 					continue;
-				smallImgROI = smallImg(r);
+				smallImgROI = processFrame(r);
 
 				// Detection of eyes in the input image 
 				nestedCascade.detectMultiScale(smallImgROI, nestedObjects, 1.1, 2, cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
@@ -219,39 +209,28 @@ void processing() {
 				faceList.push_back(*iter);
 			}
 
+			cv::cvtColor(processFrame, vizFrame, cv::COLOR_GRAY2BGR);
+
 			//Draw circles around faces and eyes
-			for (std::size_t i = 0; i < faceList.size(); i++) {
-				cv::circle(frame1, faceList[i].center, faceList[i].radius, faceList[i].color, 5);
-				for (std::size_t j = 0; j < faceList[i].eyes.size(); j++) {
-					cv::circle(frame1, faceList[i].eyes[j].center, faceList[i].eyes[j].radius, faceList[i].color, 3);
+			for (std::vector<Face>::iterator iter = faceList.begin(); iter != faceList.end(); iter++) {
+				Face face = *iter;
+				cv::circle(vizFrame, face.center, face.radius, face.color, 5);
+				for (std::vector<Eye>::iterator iter2 = face.eyes.begin(); iter2 != face.eyes.end(); iter2++) {
+					Eye eye = *iter2;
+					cv::circle(vizFrame, eye.center, eye.radius, face.color, 3);
 				}
 			}
 
-			#ifdef OFM
-				for (int y = 0; y < frame1.rows; y += 16) {
-					for (int x = 0; x < frame1.cols; x += 16)
-					{
-						//Get the flow values at each point
-						const cv::Point2f & fxy = flow.at<cv::Point2f>(y, x);
+			//Set variables for other thread
+			if (faceList.size() > 0) {
+				eye[0] = faceList[0].center.x;
+				eye[1] = faceList[0].center.y;
+				lookAt[0] = eye[0];
+				lookAt[1] = eye[1];
+			}
 
-						//Get the scalar value of the motion at the point
-						float scalarFlow = sqrt(fxy.x * fxy.x + fxy.y * fxy.y);
 
-						unsigned __int8 red = 255.0 / (1.0 + exp(-scalarFlow / 4 + 2));
-						unsigned __int8 blue = 255 - red;
-
-						//Draw the line pointing in the direction of motion
-						cv::line(frame1, cv::Point(x, y), cv::Point(cvRound(x + fxy.x), cvRound(y + fxy.y)), cv::Scalar(blue, 0, red));
-
-						//Draw the point that we're looking at
-						cv::circle(frame1, cv::Point(x, y), 2, cv::Scalar(blue, 0, red), -1);
-					}
-				}
-			#endif
-
-			imshow("Video Feed", frame);
-			imshow("Face Detection", frame1);
-			cv::swap(oldFrame, frame1);
+			imshow("Face Detection", vizFrame);
 
 			char c = (char)cv::waitKey(1);
 			if (c == VK_ESCAPE) {
