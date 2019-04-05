@@ -10,6 +10,10 @@
 #include <math.h>
 #include <tuple>
 #include <time.h>
+#include <strstream>
+#include<tchar.h>
+
+#pragma comment(lib,"Ws2_32.lib")
 
 //disable POSIX Errors in MSVC++
 #ifdef _MSC_VER
@@ -25,11 +29,12 @@
 	#include <opencv2/opencv.hpp>
 #else
 	#define NO_CV
-	#warning "OpenCV Headers not found, please check your VisualStudio Configuration"
+	//#warning "OpenCV Headers not found, please check your VisualStudio Configuration"
 #endif
 
 #define BUFFER_LENGTH 2048
 #define DEFAULT_PORT "25565"
+#define HOST_NAME "127.0.0.1"
 
 void serveFunction();
 void processing();
@@ -39,24 +44,25 @@ volatile unsigned short numClients = 0;
 volatile bool serveFail = false;
 
 #ifdef NO_CV
-	constexpr double[] lookAt = {0.0, 0.0, 0.0};
-	constexpr double[] eye = {0.0, 0.0, 0.0};
+	//double[] lookAt = {0.0, 0.0, 0.0};
+	//double[] eye = {0.0, 0.0, 0.0};
 #else
 	cv::Vec3d lookAt(0.0, 0.0, 0.0);
 	cv::Vec3d eye(0.0, 0.0, 0.0);
+
+	typedef struct Eye {
+		cv::Point center;
+		double radius;
+	} Eye;
+
+	typedef struct Face {
+		cv::Point center;
+		double radius;
+		cv::Scalar color;
+		std::vector<Eye> eyes;
+	} Face;
+
 #endif
-
-typedef struct Eye {
-	cv::Point center;
-	double radius;
-} Eye;
-
-typedef struct Face {
-	cv::Point center;
-	double radius;
-	cv::Scalar color;
-	std::vector<Eye> eyes;
-} Face;
 
 int main(){
 
@@ -244,6 +250,22 @@ void processing() {
 
 }
 
+int sendData(int sckt, void *data, int dataLength) {
+	char *msgData = (char *)data;
+	int bytesSent;
+
+	//call send in a loop until proper bytes of data have been sent to client
+	while (dataLength > 0) {
+		bytesSent = send(sckt, msgData, dataLength, 0);
+		if (bytesSent == -1) {
+			return -1;
+		}
+		msgData += bytesSent;
+		dataLength -= bytesSent;
+	}
+
+	return 0;
+}
 void serveFunction() {
 
 	//Create server socket
@@ -257,7 +279,7 @@ void serveFunction() {
 	struct addrinfo hints;
 
 	char recvBuffer[BUFFER_LENGTH];
-	int recvbuflen = BUFFER_LENGTH;
+	size_t recvbuflen = BUFFER_LENGTH;
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult) {
@@ -272,16 +294,45 @@ void serveFunction() {
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	iResult = getaddrinfo(HOST_NAME, DEFAULT_PORT, &hints, &result);
 	if (iResult) {
 		serveFail = true;
 		std::cerr << "Addressing failure" << std::endl;
 		WSACleanup();
 		return;
 	}
+	// Create a SOCKET for connecting to server
+	listener = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if (listener == INVALID_SOCKET) {
+		printf("socket failed with error: %ld\n", WSAGetLastError());
+		freeaddrinfo(result);
+		WSACleanup();
+		return;
+	}
+
+	// Setup the TCP listening socket
+	iResult = bind(listener, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		printf("bind failed with error: %d\n", WSAGetLastError());
+		freeaddrinfo(result);
+		closesocket(listener);
+		WSACleanup();
+		return;
+	}
+
+	freeaddrinfo(result);
+
+	iResult = listen(listener, SOMAXCONN);
+	if (iResult == SOCKET_ERROR) {
+		printf("listen failed with error: %d\n", WSAGetLastError());
+		closesocket(listener);
+		WSACleanup();
+		return;
+	}
 
 	client = accept(listener, NULL, NULL);
 	if (client == INVALID_SOCKET) {
+		std::cout << WSAGetLastError() << std::endl;
 		serveFail = true;
 		std::cerr << "Failure to bind to requisite socket" << std::endl;
 		closesocket(listener);
@@ -291,7 +342,7 @@ void serveFunction() {
 
 	do {
 		iResult = recv(client, recvBuffer, recvbuflen, 0);
-
+		std::cout << recvBuffer << std::endl;
 		if (iResult < 0) {
 			serveFail = true;
 			std::cerr << "Failure to recv from socket" << std::endl;
@@ -304,6 +355,27 @@ void serveFunction() {
 		//if a well formatted API request is recv'd, then send well formatted API response back
 		//if malformed request, respond with the correct HTTP code
 
+		std::strstream wsss;
+		wsss << "HTTP/1.1 200 OK\r\n"
+			<< "Content-Type: text/html; charset=utf-8 \r\n"
+			<< "Content-Length: " << sizeof(L"this shit working") << "\r\n"
+			<< L"this shit working"
+			<< "\r\n\r\n";
+		//send headers
+		std::string headers = wsss.str();
+		int res = sendData(client, (void *)headers.c_str(), headers.size());
+		if (res == -1) {
+			//Error with sending the header
+		}
+		res = sendData(client, recvBuffer, recvbuflen);
+		if (res == -1) {
+			//error sending response data
+		}
+
+		if (iResult == 0)
+		{
+			//client disconnected
+		}
 		//TODO: send response
 
 
@@ -322,4 +394,3 @@ void serveFunction() {
 	WSACleanup();
 
 }
-
