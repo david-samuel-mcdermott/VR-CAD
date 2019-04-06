@@ -1,10 +1,12 @@
-import threading
+from threading import Thread
+from time import sleep
 import socket
 from System.Windows.Forms import Screen
 import scriptcontext
 from Rhino.Display import DefinedViewportProjection, RhinoView, RhinoViewport
 from System.Drawing import Rectangle
 import re
+import json
 
 #This is the name of the display to use; displays are named by their Windows display numbers
 DISPLAY_NAME = "\\\\.\\DISPLAY2"
@@ -27,11 +29,11 @@ found = False
 for screen in Screen.AllScreens:
     if screen.DeviceName == DISPLAY_NAME:
         displayBounds = screen.Bounds
-		found = True
-		break
+        found = True
+        break
     else:
         continue
-		
+        
 #Create Window sizing and positioning based on display selected
 width = int(displayBounds.Width/2) + COMPENSATION_WIDTH
 height = displayBounds.Height + COMPENSATION_HEIGHT
@@ -48,55 +50,87 @@ rightEye = rightEye_View.ActiveViewport
 leftEye.SetCameraLocation(leftEye.CameraLocation-leftEye.CameraX*INTEROCULAR_DISTANCE/2.0, False)
 rightEye.SetCameraLocation(rightEye.CameraLocation-rightEye.CameraX*INTEROCULAR_DISTANCE/2.0, False)
 
-#TODO: handle payload more sophisticatedly
-def handlePayload(payload):
-	"""Returns True if valid payload, else returns false"""
-	return True
+#Get Position and look at vector from external
+#Expected response like: {"pos":[3,2,1], "lookAt":[1,2,3]}
+lastPos = None
+lastLook = None
 
-def inboundProcessor(client, address):
-	while True:
-		try:
-			resp = None
-			data = client.recv(2048)
-			if data:
-				post = data.decode('utf-8')
-				if not post.startswith('POST'):
-					resp = '403 FORBIDDEN \n\r\n\r'
-				elif not post.startswith('POST /UI HTTP/1.1'):
-					resp = '404 NOT FOUND\n\r\n\r'
-				else:
-					if payload = post.split("\n\r\n\r")[1]:
-						resp = '200 OK\n\r\n\r'
-					else:
-						resp = '422 UNPROCESSABLE ENTITY'
-				
-				client.send(resp.encode())
-				
-			else:
-				break;
-		except:
-			client.close()
-			return False
-	
-def inboundHandler():
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.bind(('localhost', 11000))
-	while True:
-		sock.listen(2)
-		while True:
-			client, address = sock.accept()
-			threading.Thread(target=inboundProcessor, args=(client, address).start()
-			
-threading.Thread(target=inboundHandler).start()
-
-#TODO: handle updating eye positions
 def updateEyes(data):
-	pass
+    try:
+        jdata = json.loads(data)
+    except ValueError:
+        print("no json", data)
+        return
+    userPos = (jdata['pos'][0], jdata['pos'][1], jdata['pos'][2])
+    lookAt = (jdata['lookAt'][0], jdata['lookAt'][1], jdata['lookAt'][2])
+    print("POSITION", userPos)
+    print("LOOK_AT", lookAt)
+    if lastLook is not None and lastPos is not None:
+        #TODO: Update camera location by dPosition
+        leftEye.SetCameraLocation(leftEye.CameraLocation-leftEye.CameraX*INTEROCULAR_DISTANCE/2.0, False)
+        rightEye.SetCameraLocation(rightEye.CameraLocation-rightEye.CameraX*INTEROCULAR_DISTANCE/2.0, False)
+        #TODO: Update camera rotation by dLookAt
+        leftEye.SetCameraDirection(leftEye.CameraDirection, False)
+        rightEye.SetCameraDirection(rightEye.CameraDirection, False)
+    lastPos = userPos
+    lastLook = lookAt
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('localhost', 25565))
-while True:
-	sock.sendall('GET /TableToUser HTTP/1.1\n\rHost: 127.0.0.1\n\rUser-Agent: Rhino\n\rAccept: text, application/json\n\rAccept-Language: en-us\n\rAccept-Charset: utf-8\n\r\n\r')
-	data = sock.recv(4096)
-	payload = data.decode('utf-8').split('\n\r\n\r')[1]
-	updateEyes(payload)
+def eyeUpdate():
+    print('attempting connect to vision server')
+    while True:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(('localhost', 25565))
+            sock.sendall("""GET /vector/ HTTP/1.1\nHost: localhost:25565\n\n""".encode())
+            data = sock.recv(2048).decode()
+            sock.close()
+            l = data.split('\n')
+            while '' in l:
+                l.remove('')
+            payload = l[-1]
+            updateEyes(payload)
+        except socket.error:
+            print('Socket error, host unavailable')
+            sleep(5)
+
+thread1 = Thread(target=eyeUpdate)
+thread1.start()
+
+def handleUIevent(descriptor):
+    print(descriptor)
+
+#Handle inbound POSTS for UI
+#Expects a payload like action=btnName
+def serveUI():
+    HOST, PORT = '127.0.0.1', 11000
+    listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listen_socket.bind((HOST, PORT))
+    listen_socket.listen(1)
+    print 'Serving HTTP on port %s ...' % PORT
+    while True:
+        client_connection, client_address = listen_socket.accept()
+        data = client_connection.recv(1024).decode()
+        l = data.split('\n')
+        while '' in l:
+            l.remove('')
+        payload = l[-1]
+        payload = payload.replace('action=', '')
+        handleUIevent(payload)
+        if data.startswith("POST /UI"):
+            http_response = """\
+HTTP/1.1 200 OK
+
+ACK
+"""
+        else:
+            http_response = """\
+HTTP/1.1 404 NOT FOUND
+
+Only /UI/ works presently
+"""
+        client_connection.sendall(http_response)
+        client_connection.close()
+
+thread2 = Thread(target=serveUI)
+thread2.start()
