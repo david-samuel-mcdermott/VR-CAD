@@ -11,6 +11,7 @@
 #include <tuple>
 #include <time.h>
 #include <strstream>
+#include <Windows.h>
 #include<tchar.h>
 
 #pragma comment(lib,"Ws2_32.lib")
@@ -78,6 +79,9 @@ int main(){
 void processing() {
 	 
 #ifndef NO_CV
+	//TODO: Enable Kinect kia Windows SDK / Kinect.h
+	cv::setUseOptimized(true);
+
 	std::vector < Face > faceList;
 
 	//Create the image capture variables
