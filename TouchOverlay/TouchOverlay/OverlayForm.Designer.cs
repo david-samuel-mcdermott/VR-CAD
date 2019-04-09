@@ -63,7 +63,7 @@
             this.leftFlowLayout.Dock = System.Windows.Forms.DockStyle.Left;
             this.leftFlowLayout.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.leftFlowLayout.Location = new System.Drawing.Point(0, 0);
-            this.leftFlowLayout.Name = "flowLayoutPanel1";
+            this.leftFlowLayout.Name = "leftFlowLayout";
             this.leftFlowLayout.Size = new System.Drawing.Size(55, 450);
             this.leftFlowLayout.TabIndex = 1;
             // 

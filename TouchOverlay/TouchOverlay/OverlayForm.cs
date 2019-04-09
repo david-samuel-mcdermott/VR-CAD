@@ -24,11 +24,7 @@ namespace TouchOverlay
         }
 
 
-        private void ExampleButton_Click(object sender, System.EventArgs e)
-        {
-            //This is an empty body for a click event; throw exception can be replaced with functionality
-            throw new System.NotImplementedException();
-        }
+        private void ExampleButton_Click(object sender, System.EventArgs e) => SynchronousSocketClient.SendPOST("anction=example");
 
         private void ExitButton_Click(object sender, System.EventArgs e) => System.Windows.Forms.Application.Exit();
 
