@@ -77,14 +77,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\OpenCV\__Build\install\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\OpenCV\__Build\install\x64\vc14\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\OpenCV\Install\opencv\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\OpenCV\Install\opencv\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>E:\OpenCV\Install\opencv\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\OpenCV\Install\opencv\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +117,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\binopencv_calib3d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_contrib220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_core220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_features2d220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_ffmpeg220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_flann220d.lib;C:\OpenCV\__Build\install\x64\vc14\binopencv_gpu220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_legacy220d.lib;opencv_ml220d.lib;opencv_objdetect220d.lib;opencv_video220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world410d.lib;opencv_img_hash410d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -160,10 +162,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\OpenCV\__Build\install\x64\vc14\lib\opencv_calib3d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_core320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_features2d320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_flann320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_highgui320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgcodecs320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_imgproc320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_ml320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_objdetect320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_photo320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_shape320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_stitching320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_superres320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_video320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videoio320.lib;C:\OpenCV\__Build\install\x64\vc14\lib\opencv_videostab320.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world410.lib;opencv_img_hash410.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>robocopy "$(SolutionDir)TableToUser\resources" "$(TargetDir)resources" /s /e </Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
