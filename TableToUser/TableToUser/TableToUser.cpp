@@ -33,7 +33,7 @@
 	//#warning "OpenCV Headers not found, please check your VisualStudio Configuration"
 #endif
 
-#define BUFFER_LENGTH 2048
+#define BUFFER_LENGTH 512
 #define DEFAULT_PORT "25565"
 #define HOST_NAME "127.0.0.1"
 
@@ -254,9 +254,10 @@ void processing() {
 
 }
 
-int sendData(int sckt, void *data, int dataLength) {
+int sendData(int sckt, char* data, int dataLength) {
 	char *msgData = (char *)data;
 	int bytesSent;
+	int totalBytesSent = 0;
 
 	//call send in a loop until proper bytes of data have been sent to client
 	while (dataLength > 0) {
@@ -264,11 +265,11 @@ int sendData(int sckt, void *data, int dataLength) {
 		if (bytesSent == -1) {
 			return -1;
 		}
-		msgData += bytesSent;
+		totalBytesSent += bytesSent;
 		dataLength -= bytesSent;
 	}
 
-	return 0;
+	return totalBytesSent;
 }
 void serveFunction() {
 
@@ -282,8 +283,8 @@ void serveFunction() {
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
 
-	char recvBuffer[BUFFER_LENGTH];
-	size_t recvbuflen = BUFFER_LENGTH;
+	char recvBuffer[BUFFER_LENGTH+1];
+	int recvbuflen = BUFFER_LENGTH;
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult) {
@@ -343,44 +344,51 @@ void serveFunction() {
 		WSACleanup();
 		return;
 	}
-
+	int check = 0;
 	do {
 		iResult = recv(client, recvBuffer, recvbuflen, 0);
-		std::cout << recvBuffer << std::endl;
-		if (iResult < 0) {
+		
+		if (iResult <= 0) {
 			serveFail = true;
-			std::cerr << "Failure to recv from socket" << std::endl;
+			if (check == 0) {
+				std::cerr << "Failure to recv from socket" << std::endl;
+			}
 			closesocket(client);
 			WSACleanup();
 			return;
 		}
 
-		//TODO: parse bytes (should indicate request type and are stored in recvBuffer)
+		check = 1;
+		std::cout << "Request receiver:\n" << (recvBuffer) << std::endl;
+
+		//parse bytes (should indicate request type and are stored in recvBuffer)
 		//if a well formatted API request is recv'd, then send well formatted API response back
 		//if malformed request, respond with the correct HTTP code
 
 		std::strstream wsss;
-		wsss << "HTTP/1.1 200 OK\r\n"
-			<< "Content-Type: text/html; charset=utf-8 \r\n"
-			<< "Content-Length: " << sizeof(L"this shit working") << "\r\n"
-			<< L"this shit working"
-			<< "\r\n\r\n";
+		wsss << "HTTP/1.1 200 OK\n"
+			<< "Content-Type: text/html; meta charset=UTF-8\n"
+			<< "Content-Length: " << strlen(recvBuffer) << "\n\n"
+			<< recvBuffer;
 		//send headers
 		std::string headers = wsss.str();
-		int res = sendData(client, (void *)headers.c_str(), headers.size());
+		char *nullpointer = recvBuffer + headers.size();
+		nullpointer = '\0';
+		int res = sendData(client, (char *)headers.c_str(), headers.size());
+		/*int res = send(client, headers.c_str(), headers.size(),0);*/
 		if (res == -1) {
-			//Error with sending the header
+			std::cerr << "Error sending header" << std::endl;
 		}
-		res = sendData(client, recvBuffer, recvbuflen);
+		res = sendData(client, recvBuffer, iResult);
 		if (res == -1) {
 			//error sending response data
+			std::cerr << "Failure sending response data" << std::endl;
 		}
-
 		if (iResult == 0)
 		{
-			//client disconnected
+			std::cerr << "Client disconnected" << std::endl;
 		}
-		//TODO: send response
+
 
 
 	} while (iResult && !serveStop);
