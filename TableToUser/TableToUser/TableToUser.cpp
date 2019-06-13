@@ -362,8 +362,8 @@ void serveFunction() {
 		std::strstream wsss;
 		wsss << "HTTP/1.1 200 OK\r\n"
 			<< "Content-Type: text/html; charset=utf-8 \r\n"
-			<< "Content-Length: " << sizeof(L"this shit working") << "\r\n"
-			<< L"this shit working"
+			<< "Content-Length: " << sizeof(L"Connection Successful") << "\r\n"
+			<< L"Connection Successful"
 			<< "\r\n\r\n";
 		//send headers
 		std::string headers = wsss.str();
